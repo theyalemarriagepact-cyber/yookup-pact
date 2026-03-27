@@ -336,7 +336,7 @@
         Take our short questionnaire and we'll use Nobel Prize-winning algorithms to find you your <strong>optimal yookup</strong> out of everyone on campus.<br><br>
         Better safe than sorry.
       </p>
-      <input type="email" id="email-input" placeholder="netid@yale.edu" autocomplete="email" />
+      <input type="email" id="email-input" placeholder="first.lastname@yale.edu" autocomplete="email" />
       <div class="error-msg" id="email-error"></div>
       <button class="start-btn" onclick="submitEmail()">Get started →</button>
     </div>
@@ -387,18 +387,18 @@
   const questions = [
     { q: "I would bring a hookup home to an unmade bed",                   labels: ["Yes", "Never"] },
     { q: "How attractive are you relative to Yale undergraduates?",        labels: ["Chud", "Chad"] },
-    { q: "Rate your oral hygiene",                                         labels: ["I don't brush my teeth", "Floss & mouthwash always"] },
+    { q: "How tall are you?",                                         labels: ["1ft", "7ft"] },
     { q: "The main draw of sex for me is more emotional than physical",    labels: ["Purely Physical", "All about the emotion"] },
     { q: "Do you have a foot fetish?",                                     labels: ["Eww No", "🦶👣🤤"] },
     { q: "I like to take control during sex",                              labels: ["I'm passive", "Give me the reigns 😈"] },
     { q: "I would have a threesome",                                       labels: ["Only one please", "The more the merrier"] },
-    { q: "I bring politics into the bedroom",                              labels: ["I remain institutionally neutral", "Sex is inherently political"] },
+    { q: "I bring politics into the bedroom",                              labels: ["I'm institutionally neutral", "Sex is inherently political"] },
     { q: "I want children",                                                labels: ["Definitely no", "Definitely yes"] },
     { q: "I would hook up in the stacks",                                  labels: ["Never", "It's tradition"] },
     { q: "How hot is Pericles Lewis?",                                     labels: ["Garden Gnome", "🍆💦"] },
     { q: "I am fine with bestiality",                                      labels: ["GROSS", "Handsome Dan 😩😩🦴"] },
     { q: "What is your favorite number?",                                  labels: ["1", "7"] },
-    { q: "I am fine with necrophilia",                                     labels: ["I prefer the living", "I'm going crazy at grove street cemetery"] },
+    { q: "I am fine with necrophilia",                                     labels: ["NO", "I'm going crazy at grove st cemetery 🧟‍♂️😩"] },
   ];
 
   const answers = new Array(questions.length).fill(null);
