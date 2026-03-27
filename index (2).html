@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yale Marriage Pact</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e1610;
+      --cream: #e8e2d4;
+      --cream-dim: rgba(232,226,212,0.45);
+      --cream-faint: rgba(232,226,212,0.10);
+      --btn-border: rgba(232,226,212,0.20);
+      --btn-hover: rgba(232,226,212,0.08);
+      --selected-bg: #e8e2d4;
+      --selected-text: #0e1610;
+      --error: #c9614a;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    #scroller {
+      width: 100%;
+      height: 100vh;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      background: var(--bg);
+      color: var(--cream);
+      font-family: 'Inter', sans-serif;
+    }
+
+    .snap-section {
+      height: 100vh;
+      width: 100%;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .hidden { display: none !important; }
+
+    /* ── EMAIL ── */
+    .email-eyebrow {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--cream-dim);
+      margin-bottom: 24px;
+    }
+
+    .email-title {
+      font-family: 'Lora', serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 400;
+      color: var(--cream);
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+
+    .email-sub {
+      font-family: 'Lora', serif;
+      font-size: 1.05rem;
+      color: var(--cream-dim);
+      line-height: 1.85;
+      margin-bottom: 40px;
+      max-width: 440px;
+    }
+
+    .email-sub strong { color: var(--cream); font-weight: 500; }
+
+    input[type="email"] {
+      width: 100%;
+      max-width: 340px;
+      background: var(--cream-faint);
+      border: 1px solid var(--btn-border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      color: var(--cream);
+      outline: none;
+      transition: border-color 0.2s;
+      caret-color: var(--cream);
+      display: block;
+      margin: 0 auto 12px;
+    }
+
+    input[type="email"]::placeholder { color: var(--cream-dim); }
+    input[type="email"]:focus { border-color: rgba(232,226,212,0.5); }
+    input[type="email"].error { border-color: var(--error); }
+
+    .error-msg {
+      font-size: 12px;
+      color: var(--error);
+      text-align: center;
+      min-height: 18px;
+      margin-bottom: 12px;
+    }
+
+    .start-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--cream);
+      color: var(--selected-text);
+      border: none;
+      border-radius: 8px;
+      padding: 13px 28px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      letter-spacing: 0.02em;
+    }
+    .start-btn:hover { opacity: 0.88; }
+
+    /* ── CHOICE PAGES (gender / orientation) ── */
+    .choice-question {
+      font-family: 'Lora', serif;
+      font-size: clamp(1.4rem, 3.5vw, 2rem);
+      font-weight: 400;
+      line-height: 1.4;
+      color: var(--cream);
+      margin-bottom: 40px;
+      max-width: 540px;
+    }
+
+    .choice-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      max-width: 340px;
+    }
+
+    .choice-btn {
+      width: 100%;
+      padding: 14px 20px;
+      border-radius: 10px;
+      border: 1px solid var(--btn-border);
+      background: transparent;
+      color: var(--cream);
+      font-size: 15px;
+      font-family: 'Lora', serif;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      text-align: center;
+    }
+
+    .choice-btn:hover {
+      background: var(--btn-hover);
+      border-color: rgba(232,226,212,0.38);
+    }
+
+    .choice-btn.selected {
+      background: var(--selected-bg);
+      border-color: var(--selected-bg);
+      color: var(--selected-text);
+    }
+
+    @keyframes choiceBlink {
+      0%   { background: var(--selected-bg); border-color: var(--selected-bg); color: var(--selected-text); }
+      25%  { background: transparent;        border-color: var(--btn-border);  color: var(--cream); }
+      50%  { background: var(--selected-bg); border-color: var(--selected-bg); color: var(--selected-text); }
+      75%  { background: transparent;        border-color: var(--btn-border);  color: var(--cream); }
+      100% { background: var(--selected-bg); border-color: var(--selected-bg); color: var(--selected-text); }
+    }
+
+    .choice-btn.blinking {
+      animation: choiceBlink 0.48s ease forwards;
+      pointer-events: none;
+    }
+
+    /* ── SCALE QUESTIONS ── */
+    .question-text {
+      font-family: 'Lora', serif;
+      font-size: clamp(1.3rem, 3.2vw, 1.9rem);
+      font-weight: 400;
+      line-height: 1.4;
+      color: var(--cream);
+      margin-bottom: 48px;
+      max-width: 580px;
+    }
+
+    .scale-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .scale-btn {
+      width: 70px;
+      height: 70px;
+      border-radius: 12px;
+      border: 1px solid var(--btn-border);
+      background: transparent;
+      color: var(--cream);
+      font-size: 18px;
+      font-weight: 400;
+      font-family: 'Lora', serif;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .scale-btn:hover {
+      background: var(--btn-hover);
+      border-color: rgba(232,226,212,0.38);
+    }
+
+    .scale-btn.selected {
+      background: var(--selected-bg);
+      border-color: var(--selected-bg);
+      color: var(--selected-text);
+    }
+
+    @keyframes blink {
+      0%   { background: var(--selected-bg); border-color: var(--selected-bg); color: var(--selected-text); }
+      25%  { background: transparent;        border-color: var(--btn-border);  color: var(--cream); }
+      50%  { background: var(--selected-bg); border-color: var(--selected-bg); color: var(--selected-text); }
+      75%  { background: transparent;        border-color: var(--btn-border);  color: var(--cream); }
+      100% { background: var(--selected-bg); border-color: var(--selected-bg); color: var(--selected-text); }
+    }
+
+    .scale-btn.blinking {
+      animation: blink 0.48s ease forwards;
+      pointer-events: none;
+    }
+
+    .scale-labels {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      font-size: 15px;
+      color: var(--cream-dim);
+      max-width: 510px;
+      width: 100%;
+      padding: 0 2px;
+      margin-top: 6px;
+      gap: 24px;
+    }
+
+    .scale-labels span {
+      white-space: nowrap;
+    }
+
+    .scale-labels span:last-child {
+      text-align: right;
+    }
+
+    /* ── FINAL ── */
+    .final-eyebrow {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--cream-dim);
+      margin-bottom: 24px;
+    }
+
+    .final-title {
+      font-family: 'Lora', serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 400;
+      color: var(--cream);
+      margin-bottom: 20px;
+      line-height: 1.3;
+    }
+
+    .final-body {
+      font-family: 'Lora', serif;
+      font-size: 1.05rem;
+      color: var(--cream-dim);
+      line-height: 1.8;
+      margin-bottom: 6px;
+    }
+
+    .final-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--cream-faint);
+      border: 1px solid var(--btn-border);
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--cream-dim);
+      margin-top: 36px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--cream-dim);
+    }
+
+    @media (max-width: 520px) {
+      .scale-btn { width: 42px; height: 42px; font-size: 15px; border-radius: 8px; }
+      .scale-buttons { gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+<div id="scroller">
+
+  <!-- EMAIL -->
+  <section class="snap-section" id="section-email" style="position:relative;overflow:hidden;">
+    <canvas id="rings-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;"></canvas>
+    <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;">
+      <div class="email-eyebrow">From the Creators of The Marriage Pact</div>
+      <div class="email-title">Yale Hookup Pact</div>
+      <p class="email-sub">
+        Take our short questionnaire and we'll use Nobel Prize-winning algorithms to find you your <strong>optimal yookup</strong> out of everyone on campus.<br><br>
+        Better safe than sorry.
+      </p>
+      <input type="email" id="email-input" placeholder="netid@yale.edu" autocomplete="email" />
+      <div class="error-msg" id="email-error"></div>
+      <button class="start-btn" onclick="submitEmail()">Get started →</button>
+    </div>
+  </section>
+
+  <!-- GENDER -->
+  <section class="snap-section hidden" id="section-gender">
+    <div class="choice-question">What is your gender?</div>
+    <div class="choice-options" id="gender-options">
+      <button class="choice-btn" onclick="selectChoice('gender', 'Man', this)">Man</button>
+      <button class="choice-btn" onclick="selectChoice('gender', 'Woman', this)">Woman</button>
+      <button class="choice-btn" onclick="selectChoice('gender', 'Non-binary', this)">Non-binary</button>
+      <button class="choice-btn" onclick="selectChoice('gender', 'Other', this)">Other / Prefer not to say</button>
+    </div>
+  </section>
+
+  <!-- SEXUAL ORIENTATION -->
+  <section class="snap-section hidden" id="section-orientation">
+    <div class="choice-question">What is your sexual orientation?</div>
+    <div class="choice-options" id="orientation-options">
+      <button class="choice-btn" onclick="selectChoice('orientation', 'Straight', this)">Straight</button>
+      <button class="choice-btn" onclick="selectChoice('orientation', 'Gay / Lesbian', this)">Gay / Lesbian</button>
+      <button class="choice-btn" onclick="selectChoice('orientation', 'Bisexual', this)">Bisexual</button>
+      <button class="choice-btn" onclick="selectChoice('orientation', 'Other', this)">Other / Prefer not to say</button>
+    </div>
+  </section>
+
+  <!-- QUESTIONS injected by JS -->
+  <div id="questions-wrapper"></div>
+
+  <!-- FINAL -->
+  <section class="snap-section hidden" id="section-final">
+    <div class="final-eyebrow">Yale Marriage Pact</div>
+    <div class="final-title">You're all set.</div>
+    <p class="final-body">We've received your responses.</p>
+    <p class="final-body">We will be in contact shortly.</p>
+    <div class="final-tag">
+      <span class="dot"></span>
+      Matching in progress — 493 participants
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const SHEET_URL = "https://script.google.com/macros/s/AKfycbwfiPVvuExx23-nW49AM3qEpTLElf69Aomv6yoB3sDgsvPLy3qFpngLuUg7glTOO5d9/exec";
+
+  const questions = [
+    { q: "I would bring a hookup home to an unmade bed",                   labels: ["Yes", "Never"] },
+    { q: "How attractive are you relative to Yale undergraduates?",        labels: ["Chud", "Chad"] },
+    { q: "Rate your oral hygiene",                                         labels: ["I don't brush my teeth", "Floss & mouthwash always"] },
+    { q: "The main draw of sex for me is more emotional than physical",    labels: ["Purely Physical", "All about the emotion"] },
+    { q: "Do you have a foot fetish?",                                     labels: ["Eww No", "🦶👣🤤"] },
+    { q: "I like to take control during sex",                              labels: ["I'm passive", "Give me the reigns 😈"] },
+    { q: "I would have a threesome",                                       labels: ["Only one please", "The more the merrier"] },
+    { q: "I bring politics into the bedroom",                              labels: ["I remain institutionally neutral", "Sex is inherently political"] },
+    { q: "I want children",                                                labels: ["Definitely no", "Definitely yes"] },
+    { q: "I would hook up in the stacks",                                  labels: ["Never", "It's tradition"] },
+    { q: "How hot is Pericles Lewis?",                                     labels: ["Garden Gnome", "🍆💦"] },
+    { q: "I am fine with bestiality",                                      labels: ["GROSS", "Handsome Dan 😩😩🦴"] },
+    { q: "What is your favorite number?",                                  labels: ["1", "7"] },
+    { q: "I am fine with necrophilia",                                     labels: ["I prefer the living", "I'm going crazy at grove street cemetery"] },
+  ];
+
+  const answers = new Array(questions.length).fill(null);
+  let userEmail = '';
+  let userGender = '';
+  let userOrientation = '';
+
+  const wrapper = document.getElementById('questions-wrapper');
+
+  // Build question sections
+  questions.forEach((q, i) => {
+    const section = document.createElement('section');
+    section.className = 'snap-section hidden';
+    section.id = `q-${i}`;
+    section.innerHTML = `
+      <div class="question-text">${q.q}</div>
+      <div class="scale-buttons">
+        ${[1,2,3,4,5,6,7].map(n =>
+          `<button class="scale-btn" id="btn-${i}-${n}" onclick="selectScale(${i},${n})">${n}</button>`
+        ).join('')}
+      </div>
+      <div class="scale-labels">
+        <span>${q.labels[0]}</span>
+        <span>${q.labels[1]}</span>
+      </div>
+    `;
+    wrapper.appendChild(section);
+  });
+
+  function snapTo(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function submitEmail() {
+    const val = document.getElementById('email-input').value.trim().toLowerCase();
+    const err = document.getElementById('email-error');
+    const inp = document.getElementById('email-input');
+    if (!val.endsWith('@yale.edu')) {
+      inp.classList.add('error');
+      err.textContent = 'Please enter a valid @yale.edu email address.';
+      return;
+    }
+    inp.classList.remove('error');
+    err.textContent = '';
+    userEmail = val;
+
+    document.getElementById('section-gender').classList.remove('hidden');
+    document.getElementById('section-orientation').classList.remove('hidden');
+    questions.forEach((_, i) => document.getElementById(`q-${i}`).classList.remove('hidden'));
+
+    setTimeout(() => snapTo('section-gender'), 80);
+  }
+
+  document.getElementById('email-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitEmail();
+  });
+
+  function selectChoice(type, val, btn) {
+    // Clear previous selection
+    const container = document.getElementById(`${type}-options`);
+    container.querySelectorAll('.choice-btn').forEach(b => {
+      b.classList.remove('selected', 'blinking');
+      b.style.pointerEvents = 'none';
+    });
+
+    if (type === 'gender') userGender = val;
+    else userOrientation = val;
+
+    btn.classList.add('blinking');
+
+    btn.addEventListener('animationend', () => {
+      btn.classList.remove('blinking');
+      btn.classList.add('selected');
+      container.querySelectorAll('.choice-btn').forEach(b => b.style.pointerEvents = '');
+
+      setTimeout(() => {
+        if (type === 'gender') snapTo('section-orientation');
+        else snapTo('q-0');
+      }, 60);
+    }, { once: true });
+  }
+
+  function selectScale(qIdx, val) {
+    for (let n = 1; n <= 7; n++) {
+      const b = document.getElementById(`btn-${qIdx}-${n}`);
+      b.classList.remove('selected', 'blinking');
+      b.style.pointerEvents = 'none';
+    }
+
+    answers[qIdx] = val;
+    const chosen = document.getElementById(`btn-${qIdx}-${val}`);
+    chosen.classList.add('blinking');
+
+    chosen.addEventListener('animationend', () => {
+      chosen.classList.remove('blinking');
+      chosen.classList.add('selected');
+      for (let n = 1; n <= 7; n++) {
+        document.getElementById(`btn-${qIdx}-${n}`).style.pointerEvents = '';
+      }
+
+      const isLast = qIdx === questions.length - 1;
+      if (isLast) {
+        submitToSheet();
+        document.getElementById('section-final').classList.remove('hidden');
+        setTimeout(() => snapTo('section-final'), 60);
+      } else {
+        setTimeout(() => snapTo(`q-${qIdx + 1}`), 60);
+      }
+    }, { once: true });
+  }
+
+  function submitToSheet() {
+    const payload = {
+      email: userEmail,
+      gender: userGender,
+      orientation: userOrientation,
+      answers: answers
+    };
+
+    fetch(SHEET_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(err => console.warn('Sheet submit failed:', err));
+  }
+</script>
+
+<script>
+// ── CONCENTRIC RINGS ANIMATION (offscreen pre-render) ──
+(function() {
+  const names = [
+    "you","alex","jordan","casey","morgan","riley","taylor","sam","jamie","avery",
+    "blake","quinn","drew","harper","reese","skyler","sage","river","phoenix","eden",
+    "charlie","rowan","emery","finley","hayden","logan","peyton","parker","elliot","sloane",
+    "nadia","omar","priya","luca","zara","felix","isla","theo","mia","kai",
+    "nova","leo","aurora","caden","sienna","jasper","lyra","miles","cleo","arlo",
+    "vera","hugo","luna","soren","esme","remy","iris","dax","wren","ace"
+  ];
+
+  function randomPair() {
+    const a = names[Math.floor(Math.random() * names.length)];
+    let b = names[Math.floor(Math.random() * names.length)];
+    while (b === a) b = names[Math.floor(Math.random() * names.length)];
+    return Math.random() < 0.3 ? `you + ${b}` : `${a} + ${b}`;
+  }
+
+  const canvas = document.getElementById('rings-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  const ringCfg = [
+    { rMul: 0.18, speed: 0.008,  opacity: 0.10, size: 11, dir:  1 },
+    { rMul: 0.27, speed: 0.006,  opacity: 0.13, size: 12, dir: -1 },
+    { rMul: 0.37, speed: 0.005,  opacity: 0.15, size: 12, dir:  1 },
+    { rMul: 0.47, speed: 0.004,  opacity: 0.14, size: 12, dir: -1 },
+    { rMul: 0.58, speed: 0.0035, opacity: 0.12, size: 11, dir:  1 },
+    { rMul: 0.69, speed: 0.003,  opacity: 0.10, size: 11, dir: -1 },
+    { rMul: 0.81, speed: 0.0025, opacity: 0.08, size: 11, dir:  1 },
+    { rMul: 0.94, speed: 0.002,  opacity: 0.06, size: 10, dir: -1 },
+  ];
+
+  let W, H, cx, cy;
+  let ringData = [];
+
+  function buildRings() {
+    ringData = ringCfg.map((r, idx) => {
+      const radius = Math.min(W, H) * r.rMul;
+      const diameter = Math.ceil(radius * 2 + r.size * 2 + 4);
+      const off = document.createElement('canvas');
+      off.width = diameter;
+      off.height = diameter;
+      const octx = off.getContext('2d');
+      const ocx = diameter / 2, ocy = diameter / 2;
+
+      octx.font = `${r.size}px "Lora", serif`;
+      octx.fillStyle = `rgba(232,226,212,${r.opacity})`;
+      octx.textBaseline = 'middle';
+
+      const sep = '   ·   ';
+      const sampleW = octx.measureText(randomPair() + sep).width;
+      const count = Math.max(1, Math.ceil((2 * Math.PI * radius) / sampleW));
+      const fullText = Array.from({length: count}, randomPair).join(sep) + sep;
+
+      octx.save();
+      octx.translate(ocx, ocy);
+      let charAngle = 0;
+      for (let i = 0; i < fullText.length; i++) {
+        const ch = fullText[i];
+        const cw = octx.measureText(ch).width;
+        octx.save();
+        octx.rotate(charAngle / radius);
+        octx.translate(radius, 0);
+        octx.rotate(Math.PI / 2);
+        octx.fillText(ch, 0, 0);
+        octx.restore();
+        charAngle += cw;
+      }
+      octx.restore();
+
+      return { ...r, off, diameter, angle: Math.random() * Math.PI * 2 };
+    });
+  }
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    W = canvas.width = rect.width;
+    H = canvas.height = rect.height;
+    cx = W / 2; cy = H / 2;
+    buildRings();
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, W, H);
+    ringData.forEach(rd => {
+      rd.angle += rd.speed * rd.dir;
+      const half = rd.diameter / 2;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(rd.angle);
+      ctx.drawImage(rd.off, -half, -half);
+      ctx.restore();
+    });
+    requestAnimationFrame(animate);
+  }
+
+  resize();
+  animate();
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(resize, 200);
+  });
+})();
+</script>
+
+</body>
+</html>
